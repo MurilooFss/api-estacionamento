@@ -9,28 +9,32 @@ export async function getCars(req, res) {
 
 export async function getCar(req, res) {
     openDb().then(async (db) => {
-        const id = req.body.id
+
+        const id = req.query.id_carro
+
         db.all('select * from carros where id_carro is ?', [id]).then(cars => res.json(cars))
 
     })
 }
 export async function insertCar(req, res) {
-    car = req.body
+    let car = req.body
     openDb().then(db => {
         db.run('insert into carros(id_estacionamento, marca, modelo, cor, placa, tamanho, tipo, hora_entrada, finalizado) values(?,?,?,?,?,?,?,?,?)', [car.id_estacionamento, car.marca, car.modelo, car.cor, car.placa, car.tamanho, car.tipo, car.hora_entrada, car.finalizado])
     })
 }
 export async function updateCar(req, res) {
     let carUpdate = req.body
+    console.log(carUpdate)
     openDb().then(db => {
         db.run('update carros set marca=?, modelo=?, cor=?, placa=?, tamanho=?, tipo=? where id_carro=?', [carUpdate.marca, carUpdate.modelo, carUpdate.cor, carUpdate.placa, carUpdate.tamanho, carUpdate.tipo, carUpdate.id_carro])
     }).then(() => res.json('status ok'))
 
 }
 export async function deleteCar(req, res) {
-    let car = req.body
+    let carId = req.query.id_carro
+    console.log(carId)
     openDb().then(db => {
-        db.run('delete from carros where id_carro is ?', [car.id_carro])
+        db.run('delete from carros where id_carro is ?', [carId])
     }).then(() => res.json('status removido'))
 
 }
