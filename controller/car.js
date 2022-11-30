@@ -24,7 +24,6 @@ export async function insertCar(req, res) {
 }
 export async function updateCar(req, res) {
     let carUpdate = req.body
-    console.log(carUpdate)
     openDb().then(db => {
         db.run('update carros set marca=?, modelo=?, cor=?, placa=?, tamanho=?, tipo=? where id_carro=?', [carUpdate.marca, carUpdate.modelo, carUpdate.cor, carUpdate.placa, carUpdate.tamanho, carUpdate.tipo, carUpdate.id_carro])
     }).then(() => res.json('status ok'))
@@ -32,7 +31,6 @@ export async function updateCar(req, res) {
 }
 export async function deleteCar(req, res) {
     let carId = req.query.id_carro
-    console.log(carId)
     openDb().then(db => {
         db.run('delete from carros where id_carro is ?', [carId])
     }).then(() => res.json('status removido'))
