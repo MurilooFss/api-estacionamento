@@ -1,23 +1,26 @@
 import { openDb } from "../dbConfig.js";
 
-export function getUser(req, res) {
+export async function getUser(req, res) {
     const email = req.query.email
+
     const password = req.query.password
-    console.log(email, password)
-    openDb().then(db => {
+    openDb().then(async db => {
         db.all('select * from user where email is ?', [email]).then(usr => {
             const user = usr[0]
             let resultado
             if (user == undefined) {
+
                 resultado = false
                 console.log(resultado)
                 res.json(resultado)
             } else {
                 if (user.senha != password) {
                     resultado = false
+                    console.log(resultado)
                     res.json(resultado)
                 } else {
                     resultado = user
+                    console.log(resultado)
                     res.json(resultado)
                 }
 
