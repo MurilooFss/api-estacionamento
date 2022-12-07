@@ -51,22 +51,28 @@ export async function deleteCar(req, res) {
 export async function finishTime(req, res) {
     openDb().then(async (db) => {
         const date = new Date().getTime()
-        const id_estacionamento = req.body.id_estacionamento
         const id_carro = req.body.id_carro
-        const estacionamento = await db.get('select * from estacionamento where id_estacionamento is ?', [id_estacionamento])
-        // const valorHora1 = hora1.valor_hora_1
-        // const hora2 = await db.get('select valor_hora_2 from estacionamento where id_estacionamento is ?', [id_estacionamento])
-        // const valorHora2 = hora1.valor_hora_2
-        // const hora3 = await db.get('select valor_hora_3 from estacionamento where id_estacionamento is ?', [id_estacionamento])
-        // const valorHora3 = hora3.valor_hora_1
+        const lavaRapido = req.body.lavagem
+        const higi = req.body.hInterna
+        const convenio = req.body.convenio
+        const desconto = req.body.desconto
         let car = await db.get('select * from carros where id_carro is ?', [id_carro])
-        // res.json(car)
+        const estacionamento = await db.get('select * from estacionamento where id_estacionamento is ?', [car.id_estacionamento])
         const sec = (date / 1000.0) - (Number(car.hora_entrada) / 1000.0)
         let tempoTotalHora = (Math.round((sec / 60 / 60) * 100) / 100)
         let valorTotal
-        console.log(car.tamanho)
+
+        if (car.tamanho == 2) {
+            if (estacionamento.hora1_carro_g == null)
+                car.tamanho = 1
+        }
+        if (car.tamanho == 3) {
+            if (estacionamento.hora1_moto == null)
+                car.tamanho = 1
+        }
+
         if (car.tamanho == 1) {
-            console.log(car.tamanho)
+
             //carro Pequeno
             if (tempoTotalHora < 0.5) {
                 valorTotal = (estacionamento.hora1_carro_p / 2)
@@ -82,7 +88,7 @@ export async function finishTime(req, res) {
                 valorTotal = (estacionamento.hora4_carro_p)
             }
             else {
-                console.log('aqui')
+
                 valorTotal = (estacionamento.hora1_carro_p * tempoTotalHora)
             }
         }
@@ -103,7 +109,7 @@ export async function finishTime(req, res) {
                 valorTotal = (estacionamento.hora4_carro_g)
             }
             else {
-                console.log('aqui')
+
                 valorTotal = (estacionamento.hora1_carro_g * tempoTotalHora)
             }
         } else {
@@ -123,13 +129,40 @@ export async function finishTime(req, res) {
                 valorTotal = (estacionamento.hora4_moto)
             }
             else {
-                console.log('aqui moto')
+
                 valorTotal = (estacionamento.hora1_moto * tempoTotalHora / 4)
             }
         }
 
-        console.log(valorTotal)
-        res.json(tempoTotalHora)
+        if (lavaRapido) {
+            valorTotal = valorTotal + estacionamento.lava_rapido
+        }
+        if (higi) {
+            valorTotal = valorTotal + estacionamento.higi_interna
+        }
+
+        if (convenio != 0) {
+            const conv = await db.get('select desconto from convenio where id_estacionamento is ? and id_convenio is ?', [estacionamento.id_estacionamento, convenio])
+            valorTotal = valorTotal - (valorTotal * conv.desconto)
+        }
+        if (desconto != 0) {
+            valorTotal = valorTotal - (valorTotal * (desconto * 5 / 100))
+        }
+        const carUpdate = {
+            id_carro: id_carro,
+            hora_saida: date,
+            finalizado: 1,
+            lava_rapido: lavaRapido,
+            higi_interna: higi,
+            id_convenio: convenio,
+            desconto: desconto,
+            pagamento: req.body.payType,
+            valor_total: valorTotal,
+            tempo_total: tempoTotalHora
+        }
+        db.run('update carros set hora_saida=?, finalizado=?, lava_rapido=?, higi_interna=?, id_convenio=?, desconto=?, pagamento=?, valor_total=?, tempo_total=? where id_carro=?', [carUpdate.hora_saida, carUpdate.finalizado, carUpdate.lava_rapido, carUpdate.higi_interna, carUpdate.id_convenio, carUpdate.desconto, carUpdate.pagamento, carUpdate.valor_total, carUpdate.tempo_total, carUpdate.id_carro])
+
+        res.json(carUpdate.valor_total)
 
     })
 }
