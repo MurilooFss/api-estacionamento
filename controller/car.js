@@ -17,7 +17,6 @@ export async function getCars(req, res) {
 
 export async function getCar(req, res) {
     openDb().then(async (db) => {
-
         const id = req.query.id_carro
         console.log(id)
         db.all('select * from carros where id_carro is ?', [id]).then(cars => res.json(cars))
@@ -35,7 +34,7 @@ export async function insertCar(req, res) {
 export async function updateCar(req, res) {
     let carUpdate = req.body
     openDb().then(db => {
-        db.run('update carros set marca=?, modelo=?, cor=?, placa=?, tamanho=?, tipo=? where id_carro=?', [carUpdate.marca, carUpdate.modelo, carUpdate.cor, carUpdate.placa, carUpdate.tamanho, carUpdate.tipo, carUpdate.id_carro])
+        db.run('update carros set marca=?, modelo=?, cor=?, placa=?, tamanho=?, tipo=?, telefone=? where id_carro=?', [carUpdate.marca, carUpdate.modelo, carUpdate.cor, carUpdate.placa, carUpdate.tamanho, carUpdate.tipo, carUpdate.telefone, carUpdate.id_carro])
     }).then(() => res.json('status ok'))
 
 }
@@ -48,15 +47,17 @@ export async function deleteCar(req, res) {
 }
 
 
-export async function finishTime(req, res) {
+export async function calculeTime(req, res) {
+    console.log(req.body)
     openDb().then(async (db) => {
         const date = new Date().getTime()
-        const id_carro = req.body.id_carro
-        const lavaRapido = req.body.lavagem
-        const higi = req.body.hInterna
-        const convenio = req.body.convenio
-        const desconto = req.body.desconto
+        const id_carro = Number(req.body.id_carro)
+        let lavagem = req.body.lavagem
+        let hInterna = req.body.hInterna
+        const convenio = Number(req.body.convenio)
+        const desconto = Number(req.body.desconto)
         let car = await db.get('select * from carros where id_carro is ?', [id_carro])
+
         const estacionamento = await db.get('select * from estacionamento where id_estacionamento is ?', [car.id_estacionamento])
         const sec = (date / 1000.0) - (Number(car.hora_entrada) / 1000.0)
         let tempoTotalHora = (Math.round((sec / 60 / 60) * 100) / 100)
@@ -72,7 +73,6 @@ export async function finishTime(req, res) {
         }
 
         if (car.tamanho == 1) {
-
             //carro Pequeno
             if (tempoTotalHora < 0.5) {
                 valorTotal = (estacionamento.hora1_carro_p / 2)
@@ -95,7 +95,7 @@ export async function finishTime(req, res) {
             }
         }
         else if (car.tamanho == 2) {
-            console.log(car.tamanho)
+
             //carro grande
             if (tempoTotalHora < 0.5) {
                 valorTotal = (estacionamento.hora1_carro_g / 2)
@@ -118,7 +118,7 @@ export async function finishTime(req, res) {
                 valorTotal = (estacionamento.hora1_carro_g * tempoTotalHora)
             }
         } else {
-            console.log(car.tamanho)
+
             //moto
             if (tempoTotalHora < 0.5) {
                 valorTotal = (estacionamento.hora1_moto / 2)
@@ -142,11 +142,14 @@ export async function finishTime(req, res) {
             }
         }
 
-        if (lavaRapido) {
-            valorTotal = valorTotal + estacionamento.lava_rapido
+        if (lavagem == 1) {
+            valorTotal = valorTotal + Number(estacionamento.valor_lava_rapido)
         }
-        if (higi) {
+        if (hInterna == 1) {
+            hInterna = 1
             valorTotal = valorTotal + estacionamento.higi_interna
+        } else {
+            hInterna = 0
         }
 
         if (convenio != 0) {
@@ -158,19 +161,31 @@ export async function finishTime(req, res) {
         }
         const carUpdate = {
             id_carro: id_carro,
+            marca: car.marca,
+            modelo: car.modelo,
+            placa: car.placa,
+            hora_entrada: car.hora_entrada,
+            valor_total: valorTotal,
             hora_saida: date,
             finalizado: 1,
-            lava_rapido: lavaRapido,
-            higi_interna: higi,
+            lava_rapido: lavagem,
+            higi_interna: hInterna,
             id_convenio: convenio,
             desconto: desconto,
-            pagamento: req.body.payType,
-            valor_total: valorTotal,
+            pagamento: Number(req.body.payType),
             tempo_total: tempoTotalHora
         }
-        db.run('update carros set hora_saida=?, finalizado=?, lava_rapido=?, higi_interna=?, id_convenio=?, desconto=?, pagamento=?, valor_total=?, tempo_total=? where id_carro=?', [carUpdate.hora_saida, carUpdate.finalizado, carUpdate.lava_rapido, carUpdate.higi_interna, carUpdate.id_convenio, carUpdate.desconto, carUpdate.pagamento, carUpdate.valor_total, carUpdate.tempo_total, carUpdate.id_carro])
-        console.log(tempoTotalHora)
-        res.json(carUpdate.valor_total)
+        db.run('update carros set hora_saida=?, lava_rapido=?, higi_interna=?, id_convenio=?, desconto=?, pagamento=?, valor_total=?, tempo_total=? where id_carro=?', [carUpdate.hora_saida, carUpdate.lavagem, carUpdate.hInterna, carUpdate.id_convenio, carUpdate.desconto, carUpdate.pagamento, carUpdate.valor_total, carUpdate.tempo_total, carUpdate.id_carro])
+        res.send(carUpdate)
 
     })
+}
+
+export async function finishTime(req, res) {
+    const id_carro = req.body.id_carro
+    openDb().then(async (db) => {
+        db.run('update carros set finalizado = 1 where id_carro is ?', [id_carro])
+        res.json('finalizado')
+    })
+
 }
