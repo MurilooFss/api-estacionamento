@@ -189,3 +189,35 @@ export async function finishTime(req, res) {
     })
 
 }
+
+export async function getHistory(req, res) {
+    openDb().then(async (db) => {
+        //console.log(req.query.id_estacionamento)
+        const date = new Date()
+        const day = date.getDate()
+        const month = date.getMonth()
+        const year = date.getFullYear()
+        //console.log(date, day, month, year)
+        db.all('select * from carros where id_estacionamento is ? and finalizado is 1 order by hora_saida desc', [req.query.id_estacionamento]).then((r) => {
+            let result = r
+            //console.log(result)
+            const cars = []
+            for (const iterator of result) {
+                const dt = new Date(Number(iterator.hora_saida))
+                const d = dt.getDate()
+                const m = dt.getMonth()
+                const y = dt.getFullYear()
+                //console.log(iterator.hora_saida)
+                //console.log(Number(iterator.hora_saida))
+                //console.log(dt, d)
+                if (d == day && m == month && y == year) {
+                    //console.log('push')
+                    cars.push(iterator)
+
+                }
+            }
+            res.send(cars)
+        })
+
+    })
+}
