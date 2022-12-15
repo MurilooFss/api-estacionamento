@@ -11,11 +11,13 @@ export async function getCars(req, res) {
             vagas: vagas
         }
         res.json(estacionamento)
+        console.log(req.session)
 
     })
 }
 
 export async function getCar(req, res) {
+
     openDb().then(async (db) => {
         const id = req.query.id_carro
         console.log(id)
@@ -57,6 +59,7 @@ export async function calculeTime(req, res) {
         const convenio = Number(req.body.convenio)
         const desconto = Number(req.body.desconto)
         let car = await db.get('select * from carros where id_carro is ?', [id_carro])
+        console.log(req.body)
 
         const estacionamento = await db.get('select * from estacionamento where id_estacionamento is ?', [car.id_estacionamento])
         const sec = (date / 1000.0) - (Number(car.hora_entrada) / 1000.0)
@@ -172,7 +175,7 @@ export async function calculeTime(req, res) {
             higi_interna: hInterna,
             id_convenio: convenio,
             desconto: desconto,
-            pagamento: Number(req.body.payType),
+            pagamento: Number(req.body.pagamento),
             tempo_total: tempoTotalHora
         }
         db.run('update carros set hora_saida=?, lava_rapido=?, higi_interna=?, id_convenio=?, desconto=?, pagamento=?, valor_total=?, tempo_total=? where id_carro=?', [carUpdate.hora_saida, carUpdate.lavagem, carUpdate.hInterna, carUpdate.id_convenio, carUpdate.desconto, carUpdate.pagamento, carUpdate.valor_total, carUpdate.tempo_total, carUpdate.id_carro])
@@ -219,5 +222,20 @@ export async function getHistory(req, res) {
             res.send(cars)
         })
 
+    })
+}
+export async function getDetails(req, res) {
+    openDb().then(async (db) => {
+        console.log('detalhes')
+        db.get('select * from carros where id_carro is ?', [req.query.id_carro]).then((r) => {
+            res.send(r)
+        })
+
+    })
+}
+export async function reOpen(req, res) {
+    openDb().then(async (db) => {
+        console.log('reOpen')
+        db.run('update carros set finalizado = 0 where id_carro is ?', [req.body.id_carro])
     })
 }

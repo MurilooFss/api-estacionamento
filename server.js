@@ -1,4 +1,4 @@
-import { getCars, insertCar, getCar, updateCar, calculeTime, deleteCar, finishTime, getHistory } from "./controller/car.js"
+import { getCars, insertCar, getCar, updateCar, calculeTime, deleteCar, finishTime, getHistory, getDetails, reOpen } from "./controller/car.js"
 
 import { getUser } from "./controller/estacionamento.js"
 
@@ -27,3 +27,5 @@ app.route('/ativos/finish').put(finishTime)
 app.route('/user').get(getUser)
 
 app.route('/historico').get(getHistory)
+app.route('/historico/detalhes').get(getDetails)
+app.route('/historico/detalhes').put(reOpen)
