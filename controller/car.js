@@ -186,6 +186,7 @@ export async function calculeTime(req, res) {
 
 export async function finishTime(req, res) {
     const id_carro = req.body.id_carro
+    console.log(id_carro)
     openDb().then(async (db) => {
         db.run('update carros set finalizado = 1 where id_carro is ?', [id_carro])
         res.json('finalizado')
