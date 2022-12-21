@@ -1,6 +1,6 @@
 import { getCars, insertCar, getCar, updateCar, calculeTime, deleteCar, finishTime, getHistory, getDetails, reOpen } from "./controller/car.js"
 
-import { getUser } from "./controller/estacionamento.js"
+import { alterEstacionamentoData, estacionamentoData, getUser } from "./controller/estacionamento.js"
 
 import express from 'express'
 const app = express()
@@ -29,3 +29,6 @@ app.route('/user').get(getUser)
 app.route('/historico').get(getHistory)
 app.route('/historico/detalhes').get(getDetails)
 app.route('/historico/detalhes').put(reOpen)
+
+app.route('/estacionamento').get(estacionamentoData)
+app.route('/estacionamento').put(alterEstacionamentoData)
