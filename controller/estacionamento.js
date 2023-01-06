@@ -33,10 +33,10 @@ export async function getUser(req, res) {
 }
 
 export async function estacionamentoData(req, res) {
-    const id_estacionamento = req.body.id_estacionamento
+    const id_estacionamento = req.query.id_estacionamento
     openDb().then(async db => {
         db.get('select * from estacionamento where id_estacionamento is ?', [id_estacionamento]).then((r) => {
-            res.json(r)
+            res.send(r)
         })
 
     })
