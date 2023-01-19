@@ -2,6 +2,8 @@ import { getCars, insertCar, getCar, updateCar, calculeTime, deleteCar, finishTi
 
 import { alterEstacionamentoData, estacionamentoData, getUser } from "./controller/estacionamento.js"
 
+import { convData, addConv } from "./controller/convenio.js"
+
 import express from 'express'
 const app = express()
 import cors from 'cors'
@@ -32,3 +34,6 @@ app.route('/historico/detalhes').put(reOpen)
 
 app.route('/estacionamento').get(estacionamentoData)
 app.route('/estacionamento').put(alterEstacionamentoData)
+
+app.route('/convenio').get(convData)
+app.route('/convenio').post(addConv)

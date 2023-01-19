@@ -6,7 +6,6 @@ export async function getCars(req, res) {
         const result = await db.all('select * from carros where finalizado is 0 and id_estacionamento is ?', [id_estacionamento])
         const vagas = await db.get('select vagas from estacionamento where id_estacionamento is ?', [id_estacionamento])
         const conv = await db.all('select id_convenio, empresa_convenio from convenio where id_estacionamento is ?', [id_estacionamento])
-        console.log(conv)
         const estacionamento = {
             carros: result,
             vagas: vagas,
@@ -30,7 +29,7 @@ export async function getCar(req, res) {
 }
 export async function insertCar(req, res) {
     let car = req.body
-    openDb().then(db => {
+    openDb().then(async (db) => {
         db.run('insert into carros(id_estacionamento, marca, modelo, cor, placa, tamanho, tipo, hora_entrada, finalizado, telefone) values(?,?,?,?,?,?,?,?,?,?)', [car.id_estacionamento, car.marca, car.modelo, car.cor, car.placa, car.tamanho, car.tipo, car.hora_entrada, car.finalizado, car.telefone])
     }).then(x => {
         res.json('cadastrado')
