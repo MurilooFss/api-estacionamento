@@ -4,12 +4,15 @@ export async function getCars(req, res) {
     openDb().then(async (db) => {
         const id_estacionamento = req.query.id_estacionamento
         const result = await db.all('select * from carros where finalizado is 0 and id_estacionamento is ?', [id_estacionamento])
-        //console.log(result)
         const vagas = await db.get('select vagas from estacionamento where id_estacionamento is ?', [id_estacionamento])
+        const conv = await db.all('select id_convenio, empresa_convenio from convenio where id_estacionamento is ?', [id_estacionamento])
+        console.log(conv)
         const estacionamento = {
             carros: result,
-            vagas: vagas
+            vagas: vagas,
+            convenio: conv
         }
+
         res.json(estacionamento)
         console.log(req.session)
 
