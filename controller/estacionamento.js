@@ -11,16 +11,13 @@ export async function getUser(req, res) {
             if (user == undefined) {
 
                 resultado = false
-                console.log(resultado)
                 res.json(resultado)
             } else {
                 if (user.senha != password) {
                     resultado = false
-                    console.log(resultado)
                     res.json(resultado)
                 } else {
                     resultado = user
-                    console.log(resultado)
                     res.json(resultado)
                 }
 
